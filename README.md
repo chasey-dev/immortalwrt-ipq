@@ -4,10 +4,12 @@ This is a mix of commits from openwrt-ipq and ImmortalWrt 24.10 branch. Here is 
 | Branch                                                                                  | mac80211 Version | Notes                                                                 |
 |-----------------------------------------------------------------------------------------|------------------|----------------------------------------------------------------------|
 | [main-nss](https://github.com/qosmio/openwrt-ipq/tree/main-nss)                 |6.12.6|Current with upstream `main` (unstable)|
-| [24.10-nss](https://github.com/qosmio/openwrt-ipq/tree/24.10-nss)               |6.11.2|Current with upstream `openwrt-24.10` (next stable release)|
-| [24.10-nss-mx4300](https://github.com/qosmio/openwrt-ipq/tree/24.10-nss-mx4300) |6.11.2|Current with upstream `openwrt-24.10` [supports Linksys MX4300](https://github.com/openwrt/openwrt/pull/16070)|
+| [24.10-nss](https://github.com/qosmio/openwrt-ipq/tree/24.10-nss)               |6.12.6|Current with upstream `openwrt-24.10` (next stable release)|
+| ~~[24.10-nss-mx4300](https://github.com/qosmio/openwrt-ipq/tree/24.10-nss-mx4300)~~ |~~6.12.6~~|~~Current with upstream `openwrt-24.10` [supports Linksys MX4300](https://github.com/openwrt/openwrt/pull/16070)~~ MX4300 is merged upstream in both main and openwrt-24.10|
 
 UPDATE: As of [2024-12-31 support for MX4300 has been merged](https://github.com/openwrt/openwrt/pull/16070) upstream in `main` branch and `main-nss-mx4300` is no longer needed.
+
+UPDATE 2: As of [2025-02-16 support for MX4300 has been merged](https://github.com/openwrt/openwrt/pull/17889) upstream in `openwrt-24.10` branch and `24.10-nss-mx4300` is no longer needed.
 
 ## Table of Contents
 - [Overview](#overview)
