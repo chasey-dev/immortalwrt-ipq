@@ -112,7 +112,7 @@ endif
 DEFAULT_PACKAGES += $(DEFAULT_PACKAGES.$(DEVICE_TYPE))
 
 # Add tweaked packages
-# DEFAULT_PACKAGES += $(DEFAULT_PACKAGES.tweak)
+DEFAULT_PACKAGES += $(DEFAULT_PACKAGES.tweak)
 
 ##@
 # @brief Filter out packages, prepended with `-`.
