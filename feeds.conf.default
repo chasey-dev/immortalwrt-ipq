@@ -1,6 +1,6 @@
-src-git packages https://github.com/immortalwrt/packages.git;openwrt-24.10
-src-git luci https://github.com/immortalwrt/luci.git;openwrt-24.10
-src-git routing https://github.com/openwrt/routing.git;openwrt-24.10
-src-git telephony https://github.com/openwrt/telephony.git;openwrt-24.10
-src-git nss_packages https://github.com/qosmio/nss-packages.git;NSS-12.5-K6.x
-src-git sqm_scripts_nss https://github.com/qosmio/sqm-scripts-nss.git
+src-git packages https://github.com/immortalwrt/packages.git^a8bdb3dee885a7371fb0471026f99f543fc1d086
+src-git luci https://github.com/immortalwrt/luci.git^99d252e8250aa425cc4f7aeea16ceab34087ae1c
+src-git routing https://github.com/openwrt/routing.git^f2ee837d3714f86e9d636302e9f69612c71029cb
+src-git telephony https://github.com/openwrt/telephony.git^fd605af7143165a2490681ec1752f259873b9147
+src-git nss_packages https://github.com/qosmio/nss-packages.git^18a9e761828fbd54b7efe3975cd0797594eeec95
+src-git sqm_scripts_nss https://github.com/qosmio/sqm-scripts-nss.git^4b4ed8639229be5e70cf94b73cdf7dbc09e66d5d
