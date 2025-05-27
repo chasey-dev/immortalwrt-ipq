@@ -1,0 +1,175 @@
+name: CI
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      24.10-nss-mainline
+    tags:
+      release-*
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Free disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android
+
+      - name: Install dependencies
+        run: |
+          sudo apt update -y
+          sudo apt install -y ack antlr3 asciidoc autoconf automake autopoint binutils bison build-essential \
+            bzip2 ccache clang cmake cpio curl device-tree-compiler ecj fastjar flex gawk gettext gcc-multilib \
+            g++-multilib git gnutls-dev gperf haveged help2man intltool lib32gcc-s1 libc6-dev-i386 libelf-dev \
+            libglib2.0-dev libgmp3-dev libltdl-dev libmpc-dev libmpfr-dev libncurses-dev libpython3-dev \
+            libreadline-dev libssl-dev libtool libyaml-dev libz-dev lld llvm lrzsz mkisofs msmtp nano \
+            ninja-build p7zip p7zip-full patch pkgconf python3 python3-pip python3-ply python3-docutils \
+            python3-pyelftools qemu-utils re2c rsync scons squashfs-tools subversion swig texinfo uglifyjs \
+            upx-ucl unzip vim wget xmlto xxd zlib1g-dev zstd
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Hook the openwrt_core URL for opkg
+        run: |
+          OWNER="${GITHUB_REPOSITORY%%/*}"
+          REPO="${GITHUB_REPOSITORY#*/}"
+          TIME="$(curl "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" | jq -r .created_at)"
+
+          echo "ci-$(date -d "${TIME}" -u +'%Y%m%d-%H%M%S')-${GITHUB_SHA:0:8}" >version
+          sed -i "s|%U/targets/%S/packages|https://${OWNER}.github.io/${REPO}/${GITHUB_REF_NAME}/%R|" include/feeds.mk
+
+      - name: Update and install feeds
+        run: |
+          cp -r feeds.conf.default feeds.conf
+          echo "src-git uestc_authclient https://github.com/chasey-dev/uestc_authclient;main" >> feeds.conf
+          ./scripts/feeds update -a
+          ./scripts/feeds install -a
+
+      - name: Cache OpenWrt dl directory
+        uses: actions/cache@v4
+        id: cache-dl # Give an ID to check cache hit later
+        with:
+          path: dl
+          key: ${{ runner.os }}-openwrt-dl-${{ hashFiles('feeds.conf') }} # Key based on feeds
+          restore-keys: |
+            ${{ runner.os }}-openwrt-dl-
+
+      - name: Configure
+        run: |
+          cp ./nss-setup/config-nss-ci-build.seed .config
+
+          cat <<'EOF' | sed -E 's/^[[:space:]]+//' >> .config
+            CONFIG_TARGET_qualcommax_ipq807x_DEVICE_redmi_ax6-stock=y
+          EOF
+          
+          echo "CONFIG_CCACHE=n" >> .config
+          make defconfig
+
+      - name: Download
+        run: |
+          make -j16 download
+
+      - name: Build tools
+        run: |
+          make -j$(nproc) tools/install
+
+      - name: Build toolchain
+        run: |
+          make -j$(nproc) toolchain/install
+
+      - name: Build all
+        run: |
+          make V=sc -j$(nproc) IGNORE_ERRORS=1
+
+      - name: Upload bin to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: bin-qualcommax-ipq807x
+          path: bin/targets/qualcommax/ipq807x/*
+
+      - name: Upload dl to artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: dl
+          path: dl/*
+
+  release:
+    needs: [ build ]
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download dl from artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: dl
+          path: dl/
+
+      - name: Download bin from artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: bin-qualcommax-ipq807x
+          path: bin/targets/qualcommax/ipq807x/
+
+      - name: Tar
+        run: |
+          tar cvf dl.tar -C dl/ .
+          tar cvf bin-qualcommax.tar -C bin/targets/qualcommax/ipq807x/ .
+
+      - name: Generate release informations
+        run: |
+          TIME="$(curl "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" | jq -r .created_at)"
+
+          if [ "${{ github.ref_type }}" == "tag" ]; then
+            echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
+          else
+            echo "TAG=${GITHUB_REF_NAME}-${{ github.sha }}" >> $GITHUB_ENV
+          fi
+          RELEASE_TITLE="CI Release: ${GITHUB_REF_NAME} built on $(date -d "${TIME}" -u +'%Y-%m-%d %H:%M:%S %Z')"
+          echo "NAME=${RELEASE_TITLE}" >> $GITHUB_ENV
+
+          FEEDS_INFO_PATH="bin/targets/qualcommax/ipq807x/feeds.buildinfo"
+          SHA256SUMS_PATH="bin/targets/qualcommax/ipq807x/sha256sums"
+
+          FEEDS_CONTENT="N/A"
+          if [ -f "${FEEDS_INFO_PATH}" ]; then
+            FEEDS_CONTENT=$(cat "${FEEDS_INFO_PATH}" | awk -F'[ ^]' '{printf "%s: `%s`\n", $2, $4}')
+          fi
+
+          SHA256_CONTENT="N/A"
+          if [ -f "${SHA256SUMS_PATH}" ]; then
+            SHA256_CONTENT=$(cat "${SHA256SUMS_PATH}" | awk '{printf "%s: `%s`\n", $2, $1}' | sed -E 's/^\*//')
+          fi
+
+          cat <<EOF | sed -E 's/^  //' >Release.md
+            GitHub Actions CI Build for ${GITHUB_REF_NAME}
+
+            Tag: \`${GITHUB_REF_NAME}\`
+            Build triggered at: \`$(date -d "${TIME}" -u +'%Y-%m-%d %H:%M:%S %Z(%:z)')\`
+            Commit: \`${GITHUB_SHA}\`
+
+            ## Sources
+            ${FEEDS_CONTENT}
+
+            ## SHA256 Sums
+            ${SHA256_CONTENT}
+          EOF
+
+          cp Release.md Body.md
+
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG }}
+          target_commitish: ${{ github.sha }}
+          name: ${{ env.NAME }}
+          body_path: Body.md
+          files: |
+            bin/targets/qualcommax/ipq807x/sha256sums
+            bin/targets/qualcommax/ipq807x/*.*
+            *.tar
