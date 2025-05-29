@@ -1,10 +1,11 @@
-name: CI - Release-Mi-Routers
+name: CI - Mainline
 
 on:
   workflow_dispatch:
   push:
-    tags:
-      release-mi-routers-*
+    branches:
+      testing/*
+    
 
 jobs:
   build:
