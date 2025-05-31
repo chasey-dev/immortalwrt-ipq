@@ -29,14 +29,14 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Hook the openwrt_core URL for opkg
+      - name: Hook the version info
         run: |
           OWNER="${GITHUB_REPOSITORY%%/*}"
           REPO="${GITHUB_REPOSITORY#*/}"
           TIME="$(curl "https://api.github.com/repos/${GITHUB_REPOSITORY}/actions/runs/${GITHUB_RUN_ID}" | jq -r .created_at)"
 
-          echo "ci-$(date -d "${TIME}" -u +'%Y%m%d-%H%M%S')-${GITHUB_SHA:0:8}" >version
-          sed -i "s|%U/targets/%S/packages|https://${OWNER}.github.io/${REPO}/${GITHUB_REF_NAME}/%R|" include/feeds.mk
+          # echo "ci-$(date -d "${TIME}" -u +'%Y%m%d-%H%M%S')-${GITHUB_SHA:0:8}" >version
+          echo "ci-${GITHUB_REF_NAME}-${GITHUB_SHA:0:8}" >version
 
       - name: Update and install feeds
         run: |
@@ -96,7 +96,7 @@ jobs:
             # CONFIG_TARGET_DEVICE_qualcommax_ipq807x_DEVICE_zyxel_nbg7815 is not set
 
             # CONFIG_ATH11K_MEM_PROFILE_1G is not set
-            CONFIG_ATH11K_MEM_PROFILE_512M=y
+            # CONFIG_ATH11K_MEM_PROFILE_512M=y
           EOF
           
           echo "CONFIG_CCACHE=n" >> .config
