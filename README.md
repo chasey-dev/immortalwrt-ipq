@@ -1,4 +1,6 @@
-This is a mix of commits from openwrt-ipq and ImmortalWrt 24.10 branch. Here is the original README.md from openwrt-ipq:
+### ImmortalWrt-IPQ R25.06.26
+This is a mix of commits from openwrt-ipq and ImmortalWrt 24.10 branch.
+Here is the original README.md from openwrt-ipq:
 
 # NSS Fork for IPQ807x
 | Branch                                                                                  | mac80211 Version | Notes                                                                 |
