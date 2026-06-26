@@ -42,7 +42,7 @@
  static void ifb_stats64(struct net_device *dev,
  			struct rtnl_link_stats64 *stats)
  {
-@@ -326,6 +351,7 @@ static void ifb_setup(struct net_device
+@@ -325,6 +350,7 @@ static void ifb_setup(struct net_device
  	dev->flags |= IFF_NOARP;
  	dev->flags &= ~IFF_MULTICAST;
  	dev->priv_flags &= ~IFF_TX_SKB_SHARING;
@@ -68,7 +68,7 @@
   *  __dev_uc_sync - Synchonize device's unicast list
   *  @dev:  device to sync
   *  @sync: function to call if address should be added
-@@ -5272,6 +5281,11 @@ static inline bool netif_is_failover_sla
+@@ -5273,6 +5282,11 @@ static inline bool netif_is_failover_sla
  	return dev->priv_flags & IFF_FAILOVER_SLAVE;
  }
  
@@ -341,7 +341,7 @@
  
  struct Qdisc *qdisc_lookup_rcu(struct net_device *dev, u32 handle)
  {
-@@ -2405,4 +2406,26 @@ static int __init pktsched_init(void)
+@@ -2395,4 +2396,26 @@ static int __init pktsched_init(void)
  	return 0;
  }
  
@@ -370,7 +370,7 @@
  subsys_initcall(pktsched_init);
 --- a/net/sched/sch_generic.c
 +++ b/net/sched/sch_generic.c
-@@ -1083,6 +1083,7 @@ static void __qdisc_destroy(struct Qdisc
+@@ -1086,6 +1086,7 @@ static void __qdisc_destroy(struct Qdisc
  
  	call_rcu(&qdisc->rcu, qdisc_free_cb);
  }
@@ -388,7 +388,7 @@
  	u32			limit;
  	const struct Qdisc_ops	*ops;
  	struct qdisc_size_table	__rcu *stab;
-@@ -752,6 +753,42 @@ static inline bool skb_skip_tc_classify(
+@@ -780,6 +781,42 @@ static inline bool skb_skip_tc_classify(
  	return false;
  }
  
@@ -431,7 +431,7 @@
  /* Reset all TX qdiscs greater than index of a device.  */
  static inline void qdisc_reset_all_tx_gt(struct net_device *dev, unsigned int i)
  {
-@@ -1338,4 +1375,9 @@ static inline void qdisc_synchronize(con
+@@ -1381,4 +1418,9 @@ static inline void qdisc_synchronize(con
  		msleep(1);
  }
  

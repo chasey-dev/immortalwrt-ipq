@@ -126,7 +126,7 @@
  };
  
  static const struct proto_ops pppol2tp_ops;
-@@ -373,6 +381,13 @@ static int pppol2tp_xmit(struct ppp_chan
+@@ -362,6 +370,13 @@ static int pppol2tp_xmit(struct ppp_chan
  	skb->data[0] = PPP_ALLSTATIONS;
  	skb->data[1] = PPP_UI;
  
@@ -140,7 +140,7 @@
  	local_bh_disable();
  	l2tp_xmit_skb(session, skb);
  	local_bh_enable();
-@@ -818,7 +833,7 @@ static int pppol2tp_connect(struct socke
+@@ -808,7 +823,7 @@ static int pppol2tp_connect(struct socke
  	po->chan.hdrlen = PPPOL2TP_L2TP_HDR_SIZE_NOSEQ;
  
  	po->chan.private = sk;
@@ -149,7 +149,7 @@
  	po->chan.mtu	 = pppol2tp_tunnel_mtu(tunnel);
  
  	error = ppp_register_net_channel(sock_net(sk), &po->chan);
-@@ -1732,6 +1747,109 @@ static void __exit pppol2tp_exit(void)
+@@ -1723,6 +1738,109 @@ static void __exit pppol2tp_exit(void)
  	unregister_pernet_device(&pppol2tp_net_ops);
  }
  
@@ -261,7 +261,7 @@
  
 --- a/drivers/net/ppp/ppp_generic.c
 +++ b/drivers/net/ppp/ppp_generic.c
-@@ -3737,6 +3737,32 @@ int ppp_is_multilink(struct net_device *
+@@ -3740,6 +3740,32 @@ int ppp_is_multilink(struct net_device *
  }
  EXPORT_SYMBOL(ppp_is_multilink);
  
@@ -294,7 +294,7 @@
  /* ppp_channel_get_protocol()
   *	Call this to obtain the underlying protocol of the PPP channel,
   *	e.g. PX_PROTO_OE
-@@ -3875,6 +3901,59 @@ int ppp_hold_channels(struct net_device
+@@ -3878,6 +3904,59 @@ int ppp_hold_channels(struct net_device
  }
  EXPORT_SYMBOL(ppp_hold_channels);
  
