@@ -340,7 +340,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  };
 --- a/net/mac80211/driver-ops.c
 +++ b/net/mac80211/driver-ops.c
-@@ -628,3 +628,23 @@ int drv_change_sta_links(struct ieee8021
+@@ -631,3 +631,23 @@ int drv_change_sta_links(struct ieee8021
  
  	return 0;
  }
@@ -1193,17 +1193,22 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  		if (!is_multicast_ether_addr(skb->data)) {
  			struct sta_info *next_hop;
  			bool mpp_lookup = true;
-@@ -2974,6 +2984,9 @@ static struct sk_buff *ieee80211_build_h
+@@ -2974,10 +2984,10 @@ static struct sk_buff *ieee80211_build_h
  
  	skb_reset_mac_header(skb);
  
+-	info = IEEE80211_SKB_CB(skb);
+-	memset(info, 0, sizeof(*info));
+-
+-	info->flags = info_flags;
 +#ifdef CPTCFG_MAC80211_MESH
 +nss_mesh:
 +#endif
- 	info = IEEE80211_SKB_CB(skb);
- 	memset(info, 0, sizeof(*info));
- 
-@@ -4301,6 +4314,7 @@ void __ieee80211_subif_start_xmit(struct
++	info->flags |= info_flags;
+ 	if (info_id) {
+ 		info->status_data = info_id;
+ 		info->status_data_idr = 1;
+@@ -4301,6 +4311,7 @@ void __ieee80211_subif_start_xmit(struct
  	struct sk_buff *next;
  	int len = skb->len;
  	struct ieee80211_key *key = NULL;
@@ -1211,7 +1216,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
  	struct ieee80211_sub_if_data *ap_sdata;
  
  	if (unlikely(!ieee80211_sdata_running(sdata) || skb->len < ETH_HLEN)) {
-@@ -4375,9 +4389,15 @@ void __ieee80211_subif_start_xmit(struct
+@@ -4375,9 +4386,15 @@ void __ieee80211_subif_start_xmit(struct
  			goto out;
  		}
  
@@ -1220,7 +1225,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
 -		ieee80211_xmit(sdata, sta, skb);
 +		info = IEEE80211_SKB_CB(skb);
 +		if (info->flags & IEEE80211_TX_CTL_HW_80211_ENCAP) {
-+		    	if (sta)
++			if (sta)
 +				key = rcu_dereference(sta->ptk[sta->ptk_idx]);
 +			ieee80211_8023_xmit(sdata, dev, sta, key, skb);
 +		} else {
@@ -1232,7 +1237,7 @@ Signed-off-by: Gautham Kumar Senthilkumaran <quic_gauthamk@quicinc.com>
   out_free:
 --- a/net/mac80211/driver-ops.h
 +++ b/net/mac80211/driver-ops.h
-@@ -1753,4 +1753,10 @@ drv_can_neg_ttlm(struct ieee80211_local
+@@ -1756,4 +1756,10 @@ drv_can_neg_ttlm(struct ieee80211_local
  
  	return res;
  }
